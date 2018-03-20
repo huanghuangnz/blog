@@ -9,8 +9,21 @@ date_format: "%b %-d, %Y"
 header_pages:
  - about.md
 #  - contact.html
- - photo.html
+#  - photo.html
  - tech.html
+
+#  photos
+collections:
+  photos:
+    output: true
+    permalink: /:collection/:path
+    
+defaults:
+  - scope:
+      path: ""
+      type: photos
+    values:
+      layout: photo
 
 # Google services
 google_verification:

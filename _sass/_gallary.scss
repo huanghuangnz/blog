@@ -1,0 +1,229 @@
+.photo-gallery {
+    list-style: none;
+    padding: 0
+}
+
+.photo-gallery li {
+    width: 32.949%;
+    display: inline-block;
+    padding: 1.6rem;
+    box-sizing: border-box
+}
+
+@media screen and (max-width: 667px) {
+    .photo-gallery li {
+        width: 49.3%;
+        padding: 1rem
+    }
+    .photo-gallery li:nth-child(odd) {
+        padding: 1rem 1rem 1rem 0
+    }
+    .photo-gallery li:nth-child(even) {
+        padding: 1rem 0 1rem 1rem
+    }
+}
+
+.photo-gallery li img {
+    width: 100%
+}
+
+.photo {
+    margin: 4rem 0 4rem;
+    text-align: center
+}
+
+@media screen and (max-width: 414px) {
+    .photo {
+        margin: 0 0 2rem
+    }
+}
+
+.photo img {
+    width: auto;
+    max-height: calc(95vh);
+    max-width: 100%
+}
+
+.photo-container {
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 0 2rem
+}
+
+@media screen and (max-width: 414px) {
+    .photo-container {
+        padding: 0
+    }
+}
+
+.photo-thumb {
+    opacity: 0
+}
+
+.photo-thumb.photo-1 {
+    animation: drop 400ms ease-in-out 0ms forwards
+}
+
+.photo-thumb.photo-2 {
+    animation: drop 400ms ease-in-out 200ms forwards
+}
+
+.photo-thumb.photo-3 {
+    animation: drop 400ms ease-in-out 400ms forwards
+}
+
+.photo-thumb.photo-4 {
+    animation: drop 400ms ease-in-out 600ms forwards
+}
+
+.photo-thumb.photo-5 {
+    animation: drop 400ms ease-in-out 800ms forwards
+}
+
+.photo-thumb.photo-6 {
+    animation: drop 400ms ease-in-out 1000ms forwards
+}
+
+.photo-thumb.photo-7 {
+    animation: drop 400ms ease-in-out 1200ms forwards
+}
+
+.photo-thumb.photo-8 {
+    animation: drop 400ms ease-in-out 1400ms forwards
+}
+
+.photo-thumb.photo-9 {
+    animation: drop 400ms ease-in-out 1600ms forwards
+}
+
+.photo-thumb.photo-10 {
+    animation: drop 400ms ease-in-out 1800ms forwards
+}
+
+.photo-thumb.photo-11 {
+    animation: drop 400ms ease-in-out 2000ms forwards
+}
+
+.photo-thumb.photo-12 {
+    animation: drop 400ms ease-in-out 2200ms forwards
+}
+
+@keyframes drop {
+    0% {
+        opacity: 0;
+        transform: scale(1.4)
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+
+@media screen and (max-width: 736px) {
+    .hero .photo-gallery-animation {
+        transform: scale(0.9)
+    }
+}
+
+@media screen and (max-width: 667px) {
+    .hero .photo-gallery-animation {
+        transform: scale(0.8)
+    }
+}
+
+@media screen and (max-width: 568px) {
+    .hero .photo-gallery-animation {
+        transform: translateY(5rem) scale(0.5)
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .hero .photo-gallery-animation {
+        transform: translateY(5rem) scale(0.3)
+    }
+}
+
+.hero .photo-gallery-animation .camera {
+    width: 300px;
+    height: auto;
+    position: absolute;
+    bottom: 0;
+    left: calc(50vw - 150px);
+    transform: translateY(14rem);
+    animation: bounce-up 1s ease forwards;
+    z-index: 50
+}
+
+.hero .photo-gallery-animation .flash {
+    width: 5px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 5px;
+    display: inline-block;
+    box-shadow: 0 0 50rem #fff;
+    position: absolute;
+    bottom: 5.7rem;
+    left: calc(50vw + 4.5rem);
+    animation: flash 0.2s ease 3s;
+    transform: scale(0);
+    z-index: 60
+}
+
+.hero .photo-gallery-animation .photo {
+    width: 200px;
+    height: auto;
+    position: absolute;
+    bottom: 2.8rem;
+    left: calc(50% - 6rem);
+    opacity: 0;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1)
+}
+
+.hero .photo-gallery-animation .cityscape-photo-container {
+    position: absolute;
+    width: 200px;
+    bottom: 2.3rem;
+    left: calc(50% - 100px);
+    opacity: 0;
+    animation: slide-out 2.4s linear 3.2s forwards;
+    z-index: 24
+}
+
+.hero .photo-gallery-animation .cityscape-photo-container .cityscape-photo {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0
+}
+
+.hero .photo-gallery-animation .cityscape-photo-container .photo-develop {
+    background-color: #fff;
+    height: 122px;
+    width: 158px;
+    position: absolute;
+    bottom: 0.5rem;
+    left: 2.1rem;
+    animation: fade-out 3s linear 4s forwards;
+    z-index: 10
+}
+
+.hero .photo-gallery-animation .coffee-cup-photo {
+    transform: rotate(-90deg) scale(0.8);
+    animation: coffee-anim 1s ease 1.2s forwards;
+    z-index: 12
+}
+
+.hero .photo-gallery-animation .rhodes-photo {
+    animation: rhodes-anim 1s ease 1.2s forwards;
+    z-index: 14
+}
+
+.hero .photo-gallery-animation .me-fola-photo {
+    animation: me-fola-anim 1s ease 1.2s forwards;
+    z-index: 16
+}
+
+.hero .photo-gallery-animation .sea-sunset-photo {
+    animation: sea-sunset-anim 1s ease 1.2s forwards;
+    z-index: 18
+}
