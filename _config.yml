@@ -1,10 +1,10 @@
 # Site settings
 title:       Pixyll
-email:       your_email@example.com
-author:      John Otander
+email:       yuanlin1110@gmail.com
+author:      Yuan Lin
 description: "A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff."
 baseurl:     ""
-url:         "http://pixyll.com"
+url:         "https://huanghuangnz.github.io/blog/"
 date_format: "%b %-d, %Y"
 header_pages:
  - about.md
@@ -20,9 +20,9 @@ google_tag_manager:
 bing_verification:
 
 # Optional features
-animated:             false
+animated:             true
 show_related_posts:   false
-show_post_footers:    false
+show_post_footers:    true
 show_social_icons:    false
 ajaxify_contact_form: false
 enable_mathjax: false
@@ -38,7 +38,7 @@ fb_page_id:
 
 # Disqus post comments
 # (leave blank to disable Disqus)
-disqus_shortname:
+disqus_shortname: huanghuangnz
 
 # txtpen post comments
 # (leave blank to disable txtpen)
