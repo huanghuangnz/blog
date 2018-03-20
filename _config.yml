@@ -85,8 +85,8 @@ share_hackernews: false
 
 text:
   pagination:
-    newer: 'Newer'
-    older: 'Older'
+    newer: '更新'
+    older: '更旧'
   share_buttons:
     text:         'Share this post!'
     facebook:     'Share on Facebook'
