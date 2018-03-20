@@ -8,7 +8,9 @@ url:         "https://huanghuangnz.github.io"
 date_format: "%b %-d, %Y"
 header_pages:
  - about.md
- - contact.html
+#  - contact.html
+ - photo.html
+ - tech.html
 
 # Google services
 google_verification:
@@ -112,7 +114,7 @@ text:
       sent:     'Message sent!'
       error:    'Error!'
   thanks: 'Thanks for contacting us. We will reply as soon as possible.'
-  og_locale: 'en_US'
+  og_locale: 'zh_CN'
 
 # Build settings
 markdown:     kramdown
