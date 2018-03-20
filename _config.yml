@@ -1,10 +1,10 @@
 # Site settings
-title:       Pixyll
+title:       南×游记
 email:       yuanlin1110@gmail.com
 author:      Yuan Lin
 description: "A simple, beautiful theme for Jekyll that emphasizes content rather than aesthetic fluff."
-baseurl:     ""
-url:         "https://huanghuangnz.github.io/blog/"
+baseurl:     "/blog"
+url:         "https://huanghuangnz.github.io"
 date_format: "%b %-d, %Y"
 header_pages:
  - about.md
