@@ -9,7 +9,7 @@ categories: jekyll
 
 ## 先上代码
 
-有一个线上`lambda`做ETL的Extract和Load，线上的`lambda`接受以下event:
+假设我们有一个线上`lambda`做ETL的Extract和Load，线上的`lambda`接受以下event:
 ```
 {
     "projectId": 50234,
@@ -26,7 +26,9 @@ categories: jekyll
 }
 ```
 
-`lambda`的输入输出都有了，只需要定义对应的Java接口，假设`lambda`的名字是`insightsRollup`:
+### 如何实现
+
+首先，当然是定义对应的Java接口, 假设`lambda`的名字是`insightsRollup`:
 ```
 public interface InsightService {
 
@@ -58,7 +60,9 @@ public class RollupResponse {
 }
 ```
 
-这样基本就完成了，接下来的工作可以都交给`LambdaInvokerFactory`来构造`InsightService`的实例:
+**然后呢？然后就基本完成了！**
+
+接下来的工作可以都交给`LambdaInvokerFactory`来构造`InsightService`的实例:
 
 ```
 BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
@@ -110,7 +114,11 @@ Serialized request object to '{"projectId": 50234,"teamId": 69583,"forDate": "20
 
 ```
 
-其实就是`lambda`的[rest api](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html).`LambdaInvokerFactory`做得就是让你用Interface和Annotation的方式，帮你构造一个rest client调用`lambda`, 要注意这种调用方式是同步的。
+这其实就是`lambda`的[rest api](https://docs.aws.amazon.com/lambda/latest/dg/API_Invoke.html). 
+
+`LambdaInvokerFactory`做得就是让你用Interface和Annotation的方式，帮你构造一个rest client，达到本地调用`lambda`的目的. 
+
+**注意这种调用方式是同步的**
 
 ## 为什么要使用Java同步调用lambda？
 
