@@ -69,7 +69,7 @@ func processImage(filePath string, outputDir string) (string, string) {
 		log.Fatal(err)
 	}
 
-	rawFileName := filePath[strings.LastIndex(filePath, "/"):strings.LastIndex(filePath, ".")]
+	rawFileName := filePath[strings.LastIndex(filePath, "/")+1 : strings.LastIndex(filePath, ".")]
 
 	img1 := imaging.Resize(src, 1240, 0, imaging.Lanczos)
 	err1 := imaging.Save(img1, outputDir+"/"+rawFileName+".jpg")
@@ -84,27 +84,6 @@ func processImage(filePath string, outputDir string) (string, string) {
 	if err2 != nil {
 		log.Fatal(err2)
 	}
-	// //resize
-	// m := resize.Resize(1240, 0, img, resize.Lanczos3)
-
-	// out, err := os.Create(outputDir + "/" + rawFileName + ".jpg")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer out.Close()
-
-	// jpeg.Encode(out, m, nil)
-
-	// //thumbnail
-	// thumb := resize.Thumbnail(400, 400, img, resize.Lanczos3)
-
-	// tout, err := os.Create(outputDir + "/" + rawFileName + ".jpg")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer tout.Close()
-
-	// jpeg.Encode(tout, thumb, nil)
 
 	return rawFileName + ".jpg", rawFileName + "_thumb.jpg"
 }

@@ -1,11 +1,11 @@
 ---
-title: {{ .Content }}
+title: {{ .Title }}
 datePosted: {{ .DatePosted }}
 image: 
     origin: "{{ .OriginUrl }}"
     thumb: "{{ .ThumbsUrl }}"
 exif:
-  camera: "{{ .OriginUrl }}"
+  camera: "{{ .Camera }}"
   dateTaken: {{ .DateTaken }}
   location:
     name: "{{ .TakenLocation }}"
