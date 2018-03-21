@@ -145,3 +145,4 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
+  - ImgPost

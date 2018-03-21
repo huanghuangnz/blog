@@ -124,8 +124,7 @@ func extractImgInfo(f *os.File) ImgInfo {
 
 func getTemplate() *template.Template {
 	t := template.New("Person template")
-	tmpl := `
----
+	tmpl := `---
 title: {{ .Title }}
 datePosted: {{ .DatePosted }}
 image: 
