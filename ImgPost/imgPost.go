@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,8 +14,9 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
-	"github.com/esimov/caire"
 	"github.com/jasonwinn/geocoder"
+	"github.com/muesli/smartcrop"
+	"github.com/muesli/smartcrop/nfnt"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
 )
@@ -122,30 +124,29 @@ func processImage(filePath string, outputDir string) (string, string) {
 	rect := cropToRatio(thumb_phase1.Bounds(), 0.75)
 	log.Println(rect.Bounds())
 
-	//init seam processor
-	p := &caire.Processor{
-		BlurRadius:     1,
-		SobelThreshold: 10,
-		NewWidth:       rect.Size().X,
-		NewHeight:      rect.Size().Y,
-		Percentage:     false,
-		Square:         false,
-		Debug:          false,
-		Scale:          false,
-		FaceDetect:     true,
-		XMLClassifier:  "haarcascade_frontalface_default.xml",
-	}
+	f, _ := os.Open(thumb_phase1_path)
+	img, _, _ := image.Decode(f)
 
-	thumb_phase1_file, err3 := os.Open(thumb_phase1_path)
-	if err3 != nil {
-		log.Fatalf("Unable to open source file: %v", err)
+	analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
+	topCrop, _ := analyzer.FindBestCrop(img, rect.Size().X, rect.Size().Y)
+
+	// The crop will have the requested aspect ratio, but you need to copy/scale it yourself
+	fmt.Printf("Top crop: %+v\n", topCrop)
+
+	type SubImager interface {
+		SubImage(r image.Rectangle) image.Image
 	}
+	croppedimg := img.(SubImager).SubImage(topCrop)
+
 	thumb_phase2_path := outputDir + "/" + rawFileName + "_thumb.jpg"
 	thumb_phase2_file, err4 := os.OpenFile(thumb_phase2_path, os.O_CREATE|os.O_WRONLY, 0755)
 	if err4 != nil {
 		log.Fatalf("Unable to open output file: %v", err)
 	}
-	p.Process(thumb_phase1_file, thumb_phase2_file)
+
+	jpeg.Encode(thumb_phase2_file, croppedimg, nil)
+
+	os.Remove(thumb_phase1_path)
 
 	return rawFileName + ".jpg", rawFileName + "_thumb.jpg"
 }
