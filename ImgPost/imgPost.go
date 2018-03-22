@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"io/ioutil"
 	"log"
 	"os"
@@ -58,6 +59,26 @@ func extractFocal(x *exif.Exif) (int64, int64) {
 	return numer, denom
 }
 
+func cropToRatio(rect image.Rectangle, ratio float64) image.Rectangle {
+	width := rect.Max.X
+	x0 := 0
+	x1 := width
+	height := rect.Max.Y
+	shouldWitdh := width
+	shouldHeight := int(float64(width) * ratio)
+	y0 := (height - shouldHeight) / 2
+	y1 := y0 + shouldHeight
+	if height < shouldHeight {
+		shouldHeight = height
+		y0 = 0
+		y1 = height
+		shouldWitdh = int(float64(height) / ratio)
+		x0 = (width - shouldWitdh) / 2
+		x1 = x0 + shouldWitdh
+	}
+	return image.Rect(x0, y0, x1, y1)
+}
+
 func processImage(filePath string, outputDir string) (string, string) {
 	// img, err := jpeg.Decode(f)
 	// if err != nil {
@@ -78,7 +99,12 @@ func processImage(filePath string, outputDir string) (string, string) {
 		log.Fatal(err1)
 	}
 
-	thumb := imaging.Resize(src, 400, 0, imaging.Lanczos)
+	log.Println(src.Bounds())
+	rect := cropToRatio(src.Bounds(), 0.75)
+	log.Println(rect.Bounds())
+	cropped := imaging.Crop(src, rect)
+
+	thumb := imaging.Resize(cropped, 400, 0, imaging.Lanczos)
 	err2 := imaging.Save(thumb, outputDir+"/"+rawFileName+"_thumb.jpg")
 
 	if err2 != nil {
