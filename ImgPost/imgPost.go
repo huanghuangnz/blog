@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"image"
 	"io/ioutil"
@@ -12,9 +13,15 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
+	"github.com/esimov/caire"
 	"github.com/jasonwinn/geocoder"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
+)
+
+var (
+	inputDir  = flag.String("in", "", "Source Path")
+	outputDir = flag.String("out", "", "Target Path")
 )
 
 type ImgInfo struct {
@@ -92,24 +99,53 @@ func processImage(filePath string, outputDir string) (string, string) {
 
 	rawFileName := filePath[strings.LastIndex(filePath, "/")+1 : strings.LastIndex(filePath, ".")]
 
-	img1 := imaging.Resize(src, 1240, 0, imaging.Lanczos)
-	err1 := imaging.Save(img1, outputDir+"/"+rawFileName+".jpg")
+	//resize file to <=1240 witdh
+	outOriginPath := outputDir + "/" + rawFileName + ".jpg"
+	resizedFile := imaging.Resize(src, 1240, 0, imaging.Lanczos)
+	err1 := imaging.Save(resizedFile, outOriginPath)
 
 	if err1 != nil {
 		log.Fatal(err1)
 	}
 
-	log.Println(src.Bounds())
-	rect := cropToRatio(src.Bounds(), 0.75)
-	log.Println(rect.Bounds())
-	cropped := imaging.Crop(src, rect)
-
-	thumb := imaging.Resize(cropped, 400, 0, imaging.Lanczos)
-	err2 := imaging.Save(thumb, outputDir+"/"+rawFileName+"_thumb.jpg")
+	//further resize origin file to <=400 witdth
+	thumb_phase1_path := outputDir + "/" + rawFileName + "_tmp.jpg"
+	thumb_phase1 := imaging.Resize(resizedFile, 400, 0, imaging.Lanczos)
+	err2 := imaging.Save(thumb_phase1, thumb_phase1_path)
 
 	if err2 != nil {
 		log.Fatal(err2)
 	}
+
+	//crop thumb_phase1 image to target ratio img using seam
+	log.Println(thumb_phase1.Bounds())
+	rect := cropToRatio(thumb_phase1.Bounds(), 0.75)
+	log.Println(rect.Bounds())
+
+	//init seam processor
+	p := &caire.Processor{
+		BlurRadius:     1,
+		SobelThreshold: 10,
+		NewWidth:       rect.Size().X,
+		NewHeight:      rect.Size().Y,
+		Percentage:     false,
+		Square:         false,
+		Debug:          false,
+		Scale:          false,
+		FaceDetect:     true,
+		XMLClassifier:  "haarcascade_frontalface_default.xml",
+	}
+
+	thumb_phase1_file, err3 := os.Open(thumb_phase1_path)
+	if err3 != nil {
+		log.Fatalf("Unable to open source file: %v", err)
+	}
+	thumb_phase2_path := outputDir + "/" + rawFileName + "_thumb.jpg"
+	thumb_phase2_file, err4 := os.OpenFile(thumb_phase2_path, os.O_CREATE|os.O_WRONLY, 0755)
+	if err4 != nil {
+		log.Fatalf("Unable to open output file: %v", err)
+	}
+	p.Process(thumb_phase1_file, thumb_phase2_file)
 
 	return rawFileName + ".jpg", rawFileName + "_thumb.jpg"
 }
@@ -179,11 +215,14 @@ func mergeTemplate(info ImgInfo, tmpl *template.Template) string {
 }
 
 func main() {
+	flag.Parse()
+	if len(*inputDir) == 0 || len(*outputDir) == 0 {
+		log.Fatal("Usage: ImgPost -in {inDir} -out {outDir}")
+	}
+
 	geocoder.SetAPIKey("APNfRnF0ZgBM8cq4t3GEwUW9dFfRrNxr")
 
-	inputDir := os.Args[1]
-	outputDir := os.Args[2]
-	files, err := ioutil.ReadDir(inputDir)
+	files, err := ioutil.ReadDir(*inputDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -196,18 +235,18 @@ func main() {
 			rawFileName := fileInfo.Name()[:strings.LastIndex(fileInfo.Name(), ".")]
 			fmt.Println(fileInfo.Name())
 			//file
-			filePath := inputDir + "/" + fileInfo.Name()
+			filePath := *inputDir + "/" + fileInfo.Name()
 			f, err := os.Open(filePath)
 			if err != nil {
 				log.Fatal(err)
 			}
 			info := extractImgInfo(f)
-			imageUrl, thumbsUrl := processImage(filePath, outputDir)
+			imageUrl, thumbsUrl := processImage(filePath, *outputDir)
 			info.setOriginUrl(imageUrl)
 			info.setThumbsUrl(thumbsUrl)
 			markdown := mergeTemplate(info, template)
 
-			ioutil.WriteFile(outputDir+"/"+rawFileName+".md", []byte(markdown), 0644)
+			ioutil.WriteFile(*outputDir+"/"+rawFileName+".md", []byte(markdown), 0644)
 		}
 	}
 
