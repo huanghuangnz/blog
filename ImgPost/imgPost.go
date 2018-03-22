@@ -191,7 +191,8 @@ func main() {
 	template := getTemplate()
 
 	for _, fileInfo := range files {
-		if strings.HasSuffix(fileInfo.Name(), "jpg") {
+		if strings.HasSuffix(fileInfo.Name(), "jpg") ||
+			strings.HasSuffix(fileInfo.Name(), "png") {
 			rawFileName := fileInfo.Name()[:strings.LastIndex(fileInfo.Name(), ".")]
 			fmt.Println(fileInfo.Name())
 			//file
