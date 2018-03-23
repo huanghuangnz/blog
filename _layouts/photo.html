@@ -5,7 +5,7 @@ layout: default
 
   <figure class="photo">
     <img src="{{ page.image.origin }}" alt="{{ page.title }}" />
-    <figcaption>This photo was taken {% if page.exif.dateTaken %}on {{ page.exif.dateTaken | date: "%-d %B %Y" }}{% endif %} {% if page.exif.location.name %}in {{ page.exif.location.name }}{% endif %}</figcaption>
+    <figcaption>{% if page.exif.dateTaken %} on {{ page.exif.dateTaken | date: "%-d %B %Y" }}{% endif %} {% if page.exif.location.name %} 拍摄于 {{ page.exif.location.name }}{% endif %}</figcaption>
   </figure>
 
   {{ content }}
