@@ -8,20 +8,34 @@ url:         "https://huanghuangnz.github.io"
 date_format: "%b %-d, %Y"
 header_pages:
  - about.md
-#  - contact.html
-#  - photo.html
  - tech.html
 
-#  photos
+# photos
 collections:
-  photos:
+  people:
+    output: true
+    permalink: /:collection/:path
+  views:
+    output: true
+    permalink: /:collection/:path
+  animals:
     output: true
     permalink: /:collection/:path
     
 defaults:
   - scope:
       path: ""
-      type: photos
+      type: people
+    values:
+      layout: photo
+  - scope:
+      path: ""
+      type: views
+    values:
+      layout: photo
+  - scope:
+      path: ""
+      type: animals
     values:
       layout: photo
 
