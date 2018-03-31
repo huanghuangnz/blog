@@ -21,6 +21,9 @@ collections:
   animals:
     output: true
     permalink: /:collection/:path
+  foods:
+    output: true
+    permalink: /:collection/:path
     
 defaults:
   - scope:
@@ -36,6 +39,11 @@ defaults:
   - scope:
       path: ""
       type: animals
+    values:
+      layout: photo
+  - scope:
+      path: ""
+      type: foods
     values:
       layout: photo
 

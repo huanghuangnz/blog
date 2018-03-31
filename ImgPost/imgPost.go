@@ -152,10 +152,13 @@ func processImage(filePath string, outputDir string) (string, string) {
 }
 
 func geoCode(lat float64, long float64) string {
+	if lat == 0 && long == 0 {
+		return ""
+	}
 	log.Println(lat, long)
 	loc, err := geocoder.ReverseGeocode(lat, long)
 	if err != nil {
-		panic("THERE WAS SOME ERROR!!!!!")
+		panic(err.Error())
 	}
 	address := []string{loc.Street, loc.City, loc.State, loc.County}
 	return strings.Join(address, ", ")
