@@ -8,6 +8,7 @@ import (
 	"image/jpeg"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"text/template"
@@ -19,12 +20,14 @@ import (
 	"github.com/muesli/smartcrop/nfnt"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/mknote"
+	"gocv.io/x/gocv"
 )
 
 var (
 	inputDir  = flag.String("in", "", "Source Path")
 	outputDir = flag.String("out", "", "Target Path")
 )
+var RATIO float64 = 0.75
 
 type ImgInfo struct {
 	Title         string
@@ -41,8 +44,8 @@ func (f *ImgInfo) setOriginUrl(originUrl string) {
 	f.OriginUrl = originUrl
 }
 
-func (f *ImgInfo) setThumbsUrl(thumbsUrl string) {
-	f.ThumbsUrl = thumbsUrl
+func (f *ImgInfo) setThumbsUrl(thumbsURL string) {
+	f.ThumbsUrl = thumbsURL
 }
 
 func extractExif(f *os.File) *exif.Exif {
@@ -68,31 +71,38 @@ func extractFocal(x *exif.Exif) (int64, int64) {
 	return numer, denom
 }
 
-func cropToRatio(rect image.Rectangle, ratio float64) image.Rectangle {
-	width := rect.Max.X
+func centerlizedRect(cx, cy int, targetImage image.Rectangle, ratio float64) image.Rectangle {
+	width := targetImage.Max.X
 	x0 := 0
 	x1 := width
-	height := rect.Max.Y
+	height := targetImage.Max.Y
 	shouldWitdh := width
 	shouldHeight := int(float64(width) * ratio)
-	y0 := (height - shouldHeight) / 2
+	y0 := int(
+		math.Min(
+			math.Max(0, float64(cy-shouldHeight/2)),
+			float64(height-shouldHeight),
+		),
+	)
 	y1 := y0 + shouldHeight
 	if height < shouldHeight {
 		shouldHeight = height
 		y0 = 0
 		y1 = height
 		shouldWitdh = int(float64(height) / ratio)
-		x0 = (width - shouldWitdh) / 2
+		x0 = int(
+			math.Min(
+				math.Max(0, float64(cx-shouldWitdh/2)),
+				float64(width-shouldWitdh),
+			),
+		)
 		x1 = x0 + shouldWitdh
 	}
 	return image.Rect(x0, y0, x1, y1)
 }
 
 func processImage(filePath string, outputDir string) (string, string) {
-	// img, err := jpeg.Decode(f)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+
 	src, err := imaging.Open(filePath)
 
 	if err != nil {
@@ -101,7 +111,9 @@ func processImage(filePath string, outputDir string) (string, string) {
 
 	rawFileName := filePath[strings.LastIndex(filePath, "/")+1 : strings.LastIndex(filePath, ".")]
 
-	//resize file to <=1240 witdh
+	/**
+	 * preprocessing: resize file to <=1240 witdh
+	 */
 	outOriginPath := outputDir + "/" + rawFileName + ".jpg"
 	resizedFile := imaging.Resize(src, 1240, 0, imaging.Lanczos)
 	err1 := imaging.Save(resizedFile, outOriginPath)
@@ -110,43 +122,91 @@ func processImage(filePath string, outputDir string) (string, string) {
 		log.Fatal(err1)
 	}
 
-	//further resize origin file to <=400 witdth
-	thumb_phase1_path := outputDir + "/" + rawFileName + "_tmp.jpg"
-	thumb_phase1 := imaging.Resize(resizedFile, 400, 0, imaging.Lanczos)
-	err2 := imaging.Save(thumb_phase1, thumb_phase1_path)
+	/**
+	 * phase1: small image wich fit thumb scale
+	 *
+	 * further resize origin file to <=400 witdth
+	 */
+	thumbPhase1Path := outputDir + "/" + rawFileName + "_tmp.jpg"
+	thumbPhase1 := imaging.Resize(resizedFile, 400, 0, imaging.Lanczos)
+	err2 := imaging.Save(thumbPhase1, thumbPhase1Path)
 
 	if err2 != nil {
 		log.Fatal(err2)
 	}
 
-	//crop thumb_phase1 image to target ratio img using seam
-	log.Println(thumb_phase1.Bounds())
-	rect := cropToRatio(thumb_phase1.Bounds(), 0.75)
-	log.Println(rect.Bounds())
-
-	f, _ := os.Open(thumb_phase1_path)
+	/**
+	 * phase2: crop thumbPhase1 image to target ratio img
+	 *
+	 */
+	log.Println(thumbPhase1.Bounds())
+	f, _ := os.Open(thumbPhase1Path)
 	img, _, _ := image.Decode(f)
 
-	analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
-	topCrop, _ := analyzer.FindBestCrop(img, rect.Size().X, rect.Size().Y)
+	/**
+	 * phase2:
+	 * check opencv face detect first
+	 */
 
-	// The crop will have the requested aspect ratio, but you need to copy/scale it yourself
-	fmt.Printf("Top crop: %+v\n", topCrop)
+	log.Printf("trying to detect faces for cropping\n")
+	cvImg := gocv.IMRead(thumbPhase1Path, gocv.IMReadColor)
+	classifierPath := "data/haarcascade_frontalface_default.xml"
+	classifier := gocv.NewCascadeClassifier()
+	defer classifier.Close()
+	if !classifier.Load(classifierPath) {
+		log.Fatalf("Error reading cascade file: %v\n", classifierPath)
+	}
+	// cv Detect faces.
+	faces := classifier.DetectMultiScaleWithParams(cvImg, 1.1, 16, 0, image.Pt(30, 30), image.Pt(thumbPhase1.Bounds().Max.X, thumbPhase1.Bounds().Max.Y))
 
+	var bestCrop image.Rectangle
+	if len(faces) > 0 {
+		log.Printf("face detected\n")
+		//calculate the center of faces
+		cx := 0
+		cy := 0
+		n := 0
+		for _, face := range faces {
+			cx += face.Min.X + face.Max.X
+			cy += face.Min.Y + face.Max.Y
+			n += 2
+		}
+		cx = cx / n
+		cy = cy / n
+
+		bestCrop = centerlizedRect(cx, cy, thumbPhase1.Bounds(), RATIO)
+
+	} else {
+		log.Printf("no faces detected, fall back to smart crop\n")
+		/**
+		* using smart crop
+		 */
+		targetRect := centerlizedRect(0, 0, thumbPhase1.Bounds(), RATIO)
+		log.Println(targetRect.Bounds())
+
+		analyzer := smartcrop.NewAnalyzer(nfnt.NewDefaultResizer())
+		tmpCrop, _ := analyzer.FindBestCrop(img, targetRect.Size().X, targetRect.Size().Y)
+		bestCrop = tmpCrop
+
+	}
+
+	log.Printf("generate crop rect: %v\n", bestCrop)
+
+	/**
+	* outputing the image
+	 */
 	type SubImager interface {
 		SubImage(r image.Rectangle) image.Image
 	}
-	croppedimg := img.(SubImager).SubImage(topCrop)
+	croppedimg := img.(SubImager).SubImage(bestCrop)
 
-	thumb_phase2_path := outputDir + "/" + rawFileName + "_thumb.jpg"
-	thumb_phase2_file, err4 := os.OpenFile(thumb_phase2_path, os.O_CREATE|os.O_WRONLY, 0755)
+	thumbPhase2Path := outputDir + "/" + rawFileName + "_thumb.jpg"
+	thumbPhase2File, err4 := os.OpenFile(thumbPhase2Path, os.O_CREATE|os.O_WRONLY, 0755)
 	if err4 != nil {
 		log.Fatalf("Unable to open output file: %v", err)
 	}
-
-	jpeg.Encode(thumb_phase2_file, croppedimg, nil)
-
-	os.Remove(thumb_phase1_path)
+	jpeg.Encode(thumbPhase2File, croppedimg, nil)
+	os.Remove(thumbPhase1Path)
 
 	return rawFileName + ".jpg", rawFileName + "_thumb.jpg"
 }
@@ -245,9 +305,9 @@ func main() {
 				log.Fatal(err)
 			}
 			info := extractImgInfo(f)
-			imageUrl, thumbsUrl := processImage(filePath, *outputDir)
-			info.setOriginUrl(imageUrl)
-			info.setThumbsUrl(thumbsUrl)
+			imageURL, thumbsURL := processImage(filePath, *outputDir)
+			info.setOriginUrl(imageURL)
+			info.setThumbsUrl(thumbsURL)
 			markdown := mergeTemplate(info, template)
 
 			ioutil.WriteFile(*outputDir+"/"+rawFileName+".md", []byte(markdown), 0644)
