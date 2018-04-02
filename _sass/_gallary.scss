@@ -60,52 +60,10 @@
     opacity: 0
 }
 
-.photo-thumb.photo-1 {
-    animation: drop 400ms ease-in-out 0ms forwards
-}
-
-.photo-thumb.photo-2 {
-    animation: drop 400ms ease-in-out 200ms forwards
-}
-
-.photo-thumb.photo-3 {
-    animation: drop 400ms ease-in-out 400ms forwards
-}
-
-.photo-thumb.photo-4 {
-    animation: drop 400ms ease-in-out 600ms forwards
-}
-
-.photo-thumb.photo-5 {
-    animation: drop 400ms ease-in-out 800ms forwards
-}
-
-.photo-thumb.photo-6 {
-    animation: drop 400ms ease-in-out 1000ms forwards
-}
-
-.photo-thumb.photo-7 {
-    animation: drop 400ms ease-in-out 1200ms forwards
-}
-
-.photo-thumb.photo-8 {
-    animation: drop 400ms ease-in-out 1400ms forwards
-}
-
-.photo-thumb.photo-9 {
-    animation: drop 400ms ease-in-out 1600ms forwards
-}
-
-.photo-thumb.photo-10 {
-    animation: drop 400ms ease-in-out 1800ms forwards
-}
-
-.photo-thumb.photo-11 {
-    animation: drop 400ms ease-in-out 2000ms forwards
-}
-
-.photo-thumb.photo-12 {
-    animation: drop 400ms ease-in-out 2200ms forwards
+@for $i from 1 through 100 {
+    .photo-thumb.photo-#{$i}{
+        animation: drop 400ms ease-in-out #{$i*200}ms forwards
+    }
 }
 
 @keyframes drop {
